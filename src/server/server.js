@@ -96,7 +96,7 @@ app.get('/api/stream-investigate', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`\n======================================================`);
-  console.log(`  🌐 LinguaGap Server Running on http://localhost:${PORT}`);
+  console.log(`  🧭 Khoj (खोज) Server Running on http://localhost:${PORT}`);
   console.log(`  🐡 Powered by TinyFish Search, Fetch & Web Agent`);
   console.log(`======================================================\n`);
 });

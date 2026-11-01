@@ -1,8 +1,8 @@
 {
-  "name": "linguagap",
+  "name": "khoj",
   "version": "1.0.0",
   "type": "module",
-  "description": "Cross-Language Knowledge Gap Finder powered by TinyFish Search, Fetch, and Web Agent",
+  "description": "Khoj (खोज) — Autonomous Cross-Language Knowledge & Insight Radar powered by TinyFish and Groq LLMs",
   "main": "src/server/server.js",
   "scripts": {
     "start": "node src/server/server.js",

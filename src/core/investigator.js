@@ -72,7 +72,7 @@ export async function runInvestigation({
   // Stage 2: Native Query Expansion
   onProgress({
     stage: 'query_expansion',
-    message: `Generating native technical terminology in English and ${selectedCountry}...`,
+    message: `Generating authentic terminology in English and ${selectedCountry}...`,
     progress: 25
   });
 
@@ -88,7 +88,19 @@ export async function runInvestigation({
 
   // Stage 3: Parallel Search via TinyFish
   const searchPromises = [];
-  const locationCode = selectedLang === 'ja' ? 'jp' : selectedLang === 'de' ? 'de' : selectedLang === 'pt' ? 'br' : undefined;
+  const locationMap = {
+    ja: 'jp',
+    de: 'de',
+    pt: 'br',
+    fr: 'fr',
+    it: 'it',
+    el: 'gr',
+    ko: 'kr',
+    es: 'es',
+    hi: 'in',
+    zh: undefined
+  };
+  const locationCode = locationMap[selectedLang];
 
   for (const q of (queryBundle.target || []).slice(0, 2)) {
     searchPromises.push(search({ query: q, language: selectedLang, location: locationCode }, { preferLive }));
@@ -117,7 +129,7 @@ export async function runInvestigation({
   // Stage 4: Batch Fetch & Content Extraction via TinyFish
   onProgress({
     stage: 'batch_fetch',
-    message: `Fetching primary technical manuals via TinyFish Batch Fetch (${targetUrls.length} ${selectedCountry}, ${englishUrls.length} English)...`,
+    message: `Fetching primary source literature via TinyFish Batch Fetch (${targetUrls.length} ${selectedCountry}, ${englishUrls.length} English)...`,
     progress: 55,
     targetUrlsCount: targetUrls.length,
     englishUrlsCount: englishUrls.length
@@ -128,10 +140,10 @@ export async function runInvestigation({
     fetchBatch(englishUrls, { preferLive })
   ]);
 
-  // Stage 5: Deep Technical Playbook Extraction
+  // Stage 5: Deep Knowledge Extraction
   onProgress({
     stage: 'proposition_extraction',
-    message: `Extracting concrete engineering mechanisms, numerical benchmarks, and protocols...`,
+    message: `Extracting authentic techniques, methodologies, principles, and codified traditions...`,
     progress: 70,
     articlesFetchedCount: targetArticles.length + englishArticles.length
   });

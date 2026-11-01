@@ -238,22 +238,25 @@ function createPlaybookCard(gap, index, activeHubs) {
   if (gap.classification === "TERMINOLOGY_DIFFERENCE" || gap.classification === "LEXICAL_BLINDSPOT") {
     badgeColor = "bg-amber-950/60 text-amber-300 border-amber-800/60";
     badgeIcon = "fa-compass-drafting";
-    badgeLabel = "🔍 TERMINOLOGY / INDEXING DIFFERENCE";
+    badgeLabel = "🔍 TERMINOLOGY / REGIONAL DIFFERENCE";
   } else if (gap.classification === "STANDARDS_DIVERGENCE" || gap.classification === "REGULATORY_DIVERGENCE") {
     badgeColor = "bg-purple-950/60 text-purple-300 border-purple-800/60";
     badgeIcon = "fa-scale-balanced";
-    badgeLabel = "⚖️ STANDARDS & PRACTICE DIVERGENCE";
+    badgeLabel = "⚖️ TRADITION & PRACTICE DIVERGENCE";
   }
 
-  const playbook = gap.actionablePlaybook || {};
-  const steps = playbook.protocolSteps || [
-    "Review primary foreign engineering manual",
-    "Calculate empirical site parameters",
-    "Execute test batch verification"
+  const knowledge = gap.actionableKnowledge || gap.actionablePlaybook || {};
+  const corePrinciples = knowledge.corePrinciples || knowledge.coreMechanism || gap.mechanismBreakdown || "";
+  const steps = knowledge.steps || knowledge.protocolSteps || [
+    "Study primary documentation and foundational principles",
+    "Practice basic positioning and execution sequence",
+    "Refine nuance through consistent evaluation"
   ];
+  const metricsOrNuances = knowledge.keyMetricsOrNuances || knowledge.keyMetrics || gap.metricsOrStandards || "Authentic criteria specified in source";
+  const traditionsOrCodes = knowledge.authoritativeSourcesOrCodes || knowledge.codes || "Regional Primary Tradition / Code";
 
   const regionalPerspectives = gap.regionalPerspectives || [];
-  const briefingParagraphs = gap.deepTechnicalBriefing || [];
+  const briefingItems = gap.inDepthBriefing || gap.deepTechnicalBriefing || [];
 
   card.innerHTML = \`
     <!-- 1. Dossier Header -->
@@ -267,25 +270,25 @@ function createPlaybookCard(gap, index, activeHubs) {
       </div>
       <a href="\${gap.sourceUrl}" target="_blank" class="text-xs text-champagne-400 hover:text-champagne-300 font-mono flex items-center gap-1.5 truncate max-w-md transition bg-obsidian-900/80 px-3 py-1.5 rounded-lg border border-obsidian-750">
         <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-        <span class="truncate">\${gap.sourceTitle || "Primary Technical Source"}</span>
+        <span class="truncate">\${gap.sourceTitle || "Primary Source Literature"}</span>
       </a>
     </div>
 
-    <!-- 2. Headline & Overview -->
+    <!-- 2. Headline & Core Concept -->
     <div class="space-y-2">
       <h3 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight leading-snug">\${gap.gapHeadline || gap.candidateName}</h3>
-      <p class="text-sm text-zinc-300 leading-relaxed font-normal">\${playbook.coreMechanism || gap.mechanismBreakdown || ""}</p>
+      <p class="text-sm text-zinc-300 leading-relaxed font-normal">\${corePrinciples}</p>
     </div>
 
-    <!-- 3. Comparative Global Intelligence (What Different Traditions Say) -->
+    <!-- 3. Comparative Global Intelligence (What Different Traditions Practice) -->
     \${regionalPerspectives.length > 0 ? \`
     <div class="space-y-3 pt-2">
       <div class="flex items-center justify-between border-b border-obsidian-800 pb-2">
         <span class="text-xs font-mono font-bold uppercase tracking-wider text-champagne-400 flex items-center gap-2">
           <i class="fa-solid fa-earth-americas text-champagne-500"></i>
-          Comparative Global Intelligence: What Different Traditions Say
+          Comparative Global Traditions: What Different Cultures Practice
         </span>
-        <span class="text-[10px] font-mono text-zinc-500 uppercase">Cross-Corpus Triangulation</span>
+        <span class="text-[10px] font-mono text-zinc-500 uppercase">Cross-Cultural Triangulation</span>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -302,31 +305,25 @@ function createPlaybookCard(gap, index, activeHubs) {
     </div>
     \` : ""}
 
-    <!-- 4. In-Depth Technical Briefing (5-Paragraph Study Guide) -->
-    \${briefingParagraphs.length > 0 ? \`
+    <!-- 4. In-Depth Knowledge Dossier (Study Guide) -->
+    \${briefingItems.length > 0 ? \`
     <div class="space-y-4 pt-2">
       <div class="flex items-center justify-between border-b border-obsidian-800 pb-2">
         <span class="text-xs font-mono font-bold uppercase tracking-wider text-champagne-300 flex items-center gap-2">
           <i class="fa-solid fa-book-open-reader text-champagne-500"></i>
-          In-Depth Technical Briefing (Study Guide)
+          In-Depth Knowledge Dossier (Comprehensive Study Guide)
         </span>
-        <span class="text-[10px] font-mono text-champagne-400 uppercase font-semibold">5 Comprehensive Paragraphs</span>
+        <span class="text-[10px] font-mono text-champagne-400 uppercase font-semibold">\${briefingItems.length} Detailed Sections</span>
       </div>
 
       <div class="space-y-4 p-5 bg-obsidian-900/80 rounded-xl border border-obsidian-750">
-        \${briefingParagraphs.map((para, i) => {
-          const titles = [
-            "§ 1. Foundational Physical & Chemical Principles",
-            "§ 2. Quantitative Dynamics & Empirical Formulations",
-            "§ 3. Comparative Regional Nuances & Engineering Trade-offs",
-            "§ 4. Sizing Parameters, Tolerances & Contractor Standards",
-            "§ 5. Critical Failure Modes, Risk Mitigation & Directives for Further Study"
-          ];
-          const sectionTitle = titles[i] || \`§ \${i+1}. Technical Synthesis\`;
+        \${briefingItems.map((item, i) => {
+          let heading = typeof item === "object" && item.heading ? item.heading : \`Section \${i+1}\`;
+          let content = typeof item === "object" && item.content ? item.content : item;
           return \`
             <div class="space-y-1.5 border-b border-obsidian-800/80 pb-3.5 last:border-0 last:pb-0">
-              <span class="text-xs font-mono font-bold text-champagne-400 block tracking-wide">\${sectionTitle}</span>
-              <p class="text-xs sm:text-[13px] text-zinc-300 font-sans leading-relaxed text-justify">\${para}</p>
+              <span class="text-xs font-mono font-bold text-champagne-400 block tracking-wide">\${heading}</span>
+              <p class="text-xs sm:text-[13px] text-zinc-300 font-sans leading-relaxed text-justify">\${content}</p>
             </div>
           \`;
         }).join("")}
@@ -334,19 +331,19 @@ function createPlaybookCard(gap, index, activeHubs) {
     </div>
     \` : ""}
 
-    <!-- 5. Actionable Implementation Blueprint -->
+    <!-- 5. Actionable Methodology & Techniques -->
     <div class="space-y-4 pt-2">
       <div class="flex items-center justify-between border-b border-obsidian-800 pb-2">
         <span class="text-xs font-mono font-bold uppercase tracking-wider text-champagne-300 flex items-center gap-2">
-          <i class="fa-solid fa-wrench text-champagne-500"></i>
-          Actionable Implementation Blueprint
+          <i class="fa-solid fa-compass-drafting text-champagne-500"></i>
+          Actionable Methodology & Practical Sequence
         </span>
-        <span class="text-[10px] font-mono text-zinc-500 uppercase">Engineering Protocol</span>
+        <span class="text-[10px] font-mono text-zinc-500 uppercase">Implementation Protocol</span>
       </div>
 
       <!-- Execution Sequence -->
       <div class="space-y-2 p-4 bg-obsidian-900/80 rounded-xl border border-obsidian-750">
-        <span class="text-[11px] font-mono uppercase tracking-wider text-zinc-400 block mb-2">Step-by-Step Execution Sequence:</span>
+        <span class="text-[11px] font-mono uppercase tracking-wider text-zinc-400 block mb-2">Step-by-Step Practical Sequence:</span>
         <ol class="space-y-2.5 text-xs text-zinc-200">
           \${steps.map((st, i) => \`
             <li class="flex items-start gap-3">
@@ -357,15 +354,15 @@ function createPlaybookCard(gap, index, activeHubs) {
         </ol>
       </div>
 
-      <!-- Parameters & Standards -->
+      <!-- Nuances & Standards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         <div class="p-4 bg-obsidian-900/90 rounded-xl border border-obsidian-750">
-          <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">Empirical Parameters / Ratios:</span>
-          <span class="text-xs font-mono text-champagne-300 font-bold block">\${playbook.keyMetrics || gap.metricsOrStandards || "Empirical threshold specified in manual"}</span>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">Key Nuances / Metrics / Stances:</span>
+          <span class="text-xs font-mono text-champagne-300 font-bold block">\${metricsOrNuances}</span>
         </div>
         <div class="p-4 bg-obsidian-900/90 rounded-xl border border-obsidian-750">
-          <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">Domestic Standard Codes / Manuals:</span>
-          <span class="text-xs font-mono text-zinc-300 block">\${playbook.codes || "Regional Industry Standard Manual"}</span>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">Authoritative Lineages / Texts / Standards:</span>
+          <span class="text-xs font-mono text-zinc-300 block">\${traditionsOrCodes}</span>
         </div>
       </div>
     </div>
@@ -378,7 +375,7 @@ function createPlaybookCard(gap, index, activeHubs) {
           <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
           <span>Why Western Literature Overlooked It:</span>
         </div>
-        <p class="text-zinc-400 leading-relaxed text-xs">\${gap.whyEnglishMissedIt || gap.auditReasoning || "Localized to domestic industrial practice; Western literature lacks specific contractor thresholds."}</p>
+        <p class="text-zinc-400 leading-relaxed text-xs">\${gap.whyEnglishMissedIt || gap.auditReasoning || "Preserved in regional domestic literature; Western sources generalize or lack specific traditional forms."}</p>
       </div>
 
       <!-- Verifiable Primary Excerpt -->
@@ -392,7 +389,7 @@ function createPlaybookCard(gap, index, activeHubs) {
         </div>
         <p class="text-zinc-300 font-serif italic text-xs leading-relaxed">"\${gap.evidenceQuote || gap.originalQuote || "N/A"}"</p>
         <p class="text-zinc-400 text-[11px] border-t border-obsidian-800 pt-1.5 font-sans">
-          <strong class="text-zinc-300">Translation:</strong> "\${gap.translatedQuote || gap.mechanismBreakdown || ""}"
+          <strong class="text-zinc-300">Translation:</strong> "\${gap.translatedQuote || corePrinciples}"
         </p>
       </div>
     </div>
@@ -448,43 +445,55 @@ function renderAuditLedger() {
 function exportMarkdownPlaybook() {
   if (!currentDossier) return;
 
-  let md = `# KHOJ (खोज) — Technical Intelligence Blueprint: ${currentDossier.topic}\n\n`;
+  let md = `# KHOJ (खोज) — Knowledge Dossier: ${currentDossier.topic}\n\n`;
   md += `**Date:** ${currentDossier.timestamp}\n`;
   md += `**Target Knowledge Ecosystem:** ${currentDossier.targetLang.toUpperCase()}\n`;
   md += `**Execution Time:** ${(currentDossier.executionTimeMs / 1000).toFixed(1)}s\n`;
-  md += `**Verified Technical Findings:** ${currentDossier.verifiedGapsCount}\n\n`;
+  md += `**Verified Findings:** ${currentDossier.verifiedGapsCount}\n\n`;
   md += `---\n\n`;
 
   (currentDossier.verifiedGaps || []).forEach((gap, i) => {
-    const pb = gap.actionablePlaybook || {};
+    const knowledge = gap.actionableKnowledge || gap.actionablePlaybook || {};
+    const corePrinciples = knowledge.corePrinciples || knowledge.coreMechanism || gap.mechanismBreakdown || "";
+    const steps = knowledge.steps || knowledge.protocolSteps || [];
+    const metricsOrNuances = knowledge.keyMetricsOrNuances || knowledge.keyMetrics || gap.metricsOrStandards || "N/A";
+    const traditionsOrCodes = knowledge.authoritativeSourcesOrCodes || knowledge.codes || "N/A";
+
     md += `## ${i+1}. [${gap.classification}] ${gap.gapHeadline}\n\n`;
-    md += `### Core Mechanism\n${pb.coreMechanism || gap.mechanismBreakdown}\n\n`;
+    md += `### Core Principles & Overview\n${corePrinciples}\n\n`;
     
     if (gap.regionalPerspectives && gap.regionalPerspectives.length > 0) {
-      md += `### Comparative Global Intelligence (What Different Traditions Say)\n`;
+      md += `### Comparative Global Traditions\n`;
       gap.regionalPerspectives.forEach(p => {
-        md += `#### ${p.flag || '🌐'} ${p.region}\n${p.summary}\n\n`;
+        md += `#### ${p.flag || "🌐"} ${p.region}\n${p.summary}\n\n`;
       });
     }
 
-    if (gap.deepTechnicalBriefing && gap.deepTechnicalBriefing.length > 0) {
-      md += `### In-Depth Technical Briefing (Advanced Study Guide)\n`;
-      gap.deepTechnicalBriefing.forEach((p, idx) => {
-        md += `**Paragraph ${idx+1}:** ${p}\n\n`;
+    const briefingItems = gap.inDepthBriefing || gap.deepTechnicalBriefing || [];
+    if (briefingItems.length > 0) {
+      md += `### In-Depth Knowledge Dossier\n`;
+      briefingItems.forEach((item, idx) => {
+        let heading = typeof item === "object" && item.heading ? item.heading : `Section ${idx+1}`;
+        let content = typeof item === "object" && item.content ? item.content : item;
+        md += `#### ${heading}\n${content}\n\n`;
       });
     }
 
-    md += `### Actionable Implementation Protocol\n`;
-    (pb.protocolSteps || []).forEach(step => {
-      md += `- ${step}\n`;
-    });
-    md += `\n**Key Numerical Benchmarks / Ratios:** ${pb.keyMetrics || gap.metricsOrStandards || 'N/A'}\n`;
-    md += `**Domestic Standards / Codes:** ${pb.codes || 'N/A'}\n\n`;
+    if (steps.length > 0) {
+      md += `### Actionable Methodology & Sequence\n`;
+      steps.forEach(step => {
+        md += `- ${step}\n`;
+      });
+      md += `\n`;
+    }
+
+    md += `**Key Nuances / Metrics / Stances:** ${metricsOrNuances}\n`;
+    md += `**Authoritative Sources / Lineages:** ${traditionsOrCodes}\n\n`;
     md += `### Why Western Literature Missed It\n${gap.whyEnglishMissedIt || gap.auditReasoning}\n\n`;
     md += `### Primary Source Provenance\n`;
     md += `**Source:** [${gap.sourceTitle}](${gap.sourceUrl})\n`;
     md += `**Original Foreign Excerpt:**\n> "${gap.evidenceQuote || gap.originalQuote}"\n\n`;
-    md += `**Technical Translation:**\n${gap.translatedQuote}\n\n`;
+    md += `**Translation:**\n${gap.translatedQuote || corePrinciples}\n\n`;
     md += `### Adversarial Verification Log\n`;
     (gap.auditRecord?.englishQueriesChecked || []).forEach(q => {
       md += `- Checked: \`${q}\`\n`;
@@ -492,10 +501,10 @@ function exportMarkdownPlaybook() {
     md += `\n---\n\n`;
   });
 
-  const blob = new Blob([md], { type: 'text/markdown' });
+  const blob = new Blob([md], { type: "text/markdown" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
-  a.download = `Khoj_Blueprint_${currentDossier.topic.replace(/\s+/g, '_')}.md`;
+  a.download = `Khoj_Dossier_${currentDossier.topic.replace(/\s+/g, "_")}.md`;
   a.click();
 }

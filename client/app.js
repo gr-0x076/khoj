@@ -71,7 +71,7 @@ function startInvestigation(topic) {
   document.getElementById("browserLivePreviewBtn").classList.add("hidden");
 
   // Open SSE Stream
-  const sseUrl = `/api/stream-investigate?topic=${encodeURIComponent(topic)}&targetLang=${lang}&escalate=${escalate}&preferLive=true`;
+  const sseUrl = `/api/stream-investigate?topic=${encodeURIComponent(topic)}&targetLang=${lang}&escalate=${escalate}&preferLive=false`;
   const evtSource = new EventSource(sseUrl);
 
   evtSource.onmessage = (event) => {

@@ -5,9 +5,9 @@ import { generateAdversarialQueries, classifyGap } from './llm_client.js';
  * Fast Parallel Adversarial Verification Loop.
  * Capped to Top 3 candidates and executes parallel search batches to prevent latency explosion.
  */
-export async function runAdversarialVerification(foreignPropositions, onStep = null) {
-  // Cap strictly to Top 3 most distinct candidates
-  const topCandidates = (foreignPropositions || []).slice(0, 3);
+export async function runAdversarialVerification(foreignPropositions, onStep = null, targetLang = "ja") {
+  // Cap strictly to Top 2 most distinct candidates to prevent latency and token limits
+  const topCandidates = (foreignPropositions || []).slice(0, 2);
   const auditTrail = [];
 
   if (onStep) {
@@ -18,7 +18,7 @@ export async function runAdversarialVerification(foreignPropositions, onStep = n
     });
   }
 
-  // Process all candidates in parallel using Promise.all
+  // Process candidates in parallel using Promise.all
   const verifiedResults = await Promise.all(
     topCandidates.map(async (prop, index) => {
       // 1. Generate 2 targeted English counter-queries
@@ -34,7 +34,7 @@ export async function runAdversarialVerification(foreignPropositions, onStep = n
       // Deduplicate by URL
       const uniqueEnglish = Array.from(
         new Map(flatResults.map(r => [r.url, r])).values()
-      ).slice(0, 5); // Top 5 snippets for semantic check
+      ).slice(0, 4); // Top 4 snippets for semantic check
 
       // 3. Fast Semantic LLM Classification
       const classificationResult = await classifyGap(prop, uniqueEnglish);
@@ -43,7 +43,7 @@ export async function runAdversarialVerification(foreignPropositions, onStep = n
       const auditRecord = {
         candidateName: prop.name,
         sourceUrl: prop.sourceUrl,
-        sourceLanguage: 'ja',
+        sourceLanguage: prop.sourceLanguage || targetLang || 'Foreign Hub',
         englishQueriesChecked: counterQueries,
         englishResultsFoundCount: uniqueEnglish.length,
         englishTopMatches: uniqueEnglish.map(e => ({ title: e.title, url: e.url, snippet: e.snippet })),

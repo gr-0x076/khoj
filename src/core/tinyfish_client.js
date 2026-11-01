@@ -81,9 +81,9 @@ export async function search(params, options = { preferLive: true }) {
 /**
  * Tier 2: Batch Fetch up to 10 URLs with timeout and markdown cleaning.
  */
-export async function fetchBatch(urls, options = { preferLive: true, timeoutMs: 35000 }) {
+export async function fetchBatch(urls, options = { preferLive: true, timeoutMs: 10000 }) {
   if (!urls || urls.length === 0) return [];
-  const validUrls = urls.slice(0, 10);
+  const validUrls = urls.slice(0, 6);
   const cacheKey = { type: 'fetch', urls: validUrls };
 
   if (!options.preferLive) {
@@ -92,13 +92,13 @@ export async function fetchBatch(urls, options = { preferLive: true, timeoutMs: 
   }
 
   try {
-    // Timeout wrapper for network resiliency
+    // Timeout wrapper for network resiliency (10s max)
     const fetchPromise = tinyfish.fetch.getContents({
       urls: validUrls,
       format: 'markdown'
     });
 
-    const timeout = options.timeoutMs || 35000;
+    const timeout = options.timeoutMs || 10000;
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('TinyFish Fetch timed out')), timeout);
     });

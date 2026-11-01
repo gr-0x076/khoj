@@ -7,8 +7,8 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
 });
 
-// Primary & Fallback fast models
-const MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"];
+// Primary & Fallback fast models (gpt-oss-20b is ultra-fast and avoids strict OTPM limits)
+const MODELS = ["openai/gpt-oss-20b", "openai/gpt-oss-120b", "qwen/qwen3.8-27b"];
 
 /**
  * Universal JSON parser that handles markdown code blocks,
@@ -40,11 +40,16 @@ export function extractJson(text) {
 /**
  * Robust chat completion with multi-model fallback.
  */
-async function callChat(messages, max_tokens = 1100) {
+async function callChat(messages, max_tokens = 2200) {
   let lastError = null;
 
   for (const model of MODELS) {
     try {
+      // Qwen has an enforced 1000 OTPM ceiling on Groq; GPT-OSS models support 2500+
+      const effectiveTokens = model.includes("qwen") 
+        ? Math.min(max_tokens, 850) 
+        : Math.min(max_tokens, 2400);
+
       const completion = await groq.chat.completions.create({
         model,
         messages: [
@@ -52,7 +57,7 @@ async function callChat(messages, max_tokens = 1100) {
           ...messages
         ],
         temperature: 0.15,
-        max_tokens
+        max_tokens: effectiveTokens
       });
 
       const content = completion.choices[0]?.message?.content || "";
@@ -64,8 +69,8 @@ async function callChat(messages, max_tokens = 1100) {
       lastError = err;
       console.warn(`[LLM] Model ${model} error: ${err.message}.`);
       if (err.status === 429 || (err.message && err.message.includes("429"))) {
-        console.log("[LLM] 429 Rate limit hit. Pausing 2.5s for token refill...");
-        await new Promise(r => setTimeout(r, 2500));
+        console.log("[LLM] 429 Rate limit hit. Pausing 1.5s for token refill...");
+        await new Promise(r => setTimeout(r, 1500));
       }
     }
   }
@@ -147,8 +152,8 @@ Return ONLY a JSON object:
 export async function extractPropositions(articles, language = "ja", topic = "") {
   if (!articles || articles.length === 0) return [];
 
-  const summarizedDocs = articles.slice(0, 4).map((a, i) => {
-    const cleanText = (a.text || "").replace(/[\\]/g, "/").slice(0, 1500);
+  const summarizedDocs = articles.slice(0, 2).map((a, i) => {
+    const cleanText = (a.text || "").replace(/[\\]/g, "/").slice(0, 700);
     return `[Source ${i+1}] Title: ${a.title}\nURL: ${a.url}\nContent:\n${cleanText}`;
   }).join("\n\n---\n\n");
 
@@ -180,7 +185,7 @@ Return ONLY a JSON object:
 Sources:
 ${summarizedDocs}`;
 
-  const res = await callChat([{ role: "user", content: prompt }], 950);
+  const res = await callChat([{ role: "user", content: prompt }], 1800);
   if (res && Array.isArray(res.propositions) && res.propositions.length > 0) {
     return res.propositions;
   }
@@ -319,9 +324,10 @@ Return ONLY a JSON object:
   "translatedQuote": "${(foreignProp.translatedQuote || foreignProp.corePrinciples || "").slice(0, 200)}",
   "sourceUrl": "${foreignProp.sourceUrl}",
   "sourceTitle": "${foreignProp.sourceTitle}"
-}`;
+}
+Ensure the briefing paragraphs are concise and direct, containing 2-3 sentences each.`;
 
-  const res = await callChat([{ role: "user", content: prompt }], 1300);
+  const res = await callChat([{ role: "user", content: prompt }], 2200);
   if (res && res.classification) {
     return res;
   }
